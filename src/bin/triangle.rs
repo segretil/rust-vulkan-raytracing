@@ -175,9 +175,9 @@ fn main() {
         vulkano::impl_vertex!(Vertex, position);
 
         CpuAccessibleBuffer::from_iter(device.clone(), BufferUsage::all(), [
-            Vertex { position: [-0.5, -0.25] },
+            Vertex { position: [-0.5, 0.] },
             Vertex { position: [0.0, 0.5] },
-            Vertex { position: [0.25, -0.1] }
+            Vertex { position: [0.5, 0.] }
         ].iter().cloned()).unwrap()
     };
 

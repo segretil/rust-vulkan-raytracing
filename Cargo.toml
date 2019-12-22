@@ -13,3 +13,8 @@ cgmath = "0.17"
 image = "0.21"
 winit = "0.19"
 time = "0.1.37"
+shaderc = "0.5.1"
+shaderc-sys = "0.5.1"
+
+[features]
+shaderc_fix = ["shaderc/build-from-source"]
