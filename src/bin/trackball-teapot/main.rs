@@ -234,13 +234,23 @@ fn main() {
                     {
                         recreate_swapchain = true; click = false
                     },
-                winit::Event::WindowEvent { event: winit::WindowEvent::MouseInput{..}, .. } =>
+                winit::Event::WindowEvent { event: winit::WindowEvent::MouseInput{device_id, state, button, modifiers}, .. } =>
                     {
-                        click = if click {
-                            false
-                        } else {
-                            true
-                        };
+                        if button == winit::MouseButton::Left
+                        {
+                            click = if state == winit::ElementState::Released {
+                                false
+                            } else {
+                                true
+                            };
+                        }
+                    },
+                winit::Event::WindowEvent { event: winit::WindowEvent::CursorMoved {device_id, position, modifiers}, .. } =>
+                    {
+                        if click{
+//                            println!(" (Position: {:?})", position.x);
+                        }
+
                     },
                 _ => ()
             }
