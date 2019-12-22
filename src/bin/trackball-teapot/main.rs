@@ -125,6 +125,7 @@ fn main() {
 
     let mut previous_frame = Box::new(sync::now(device.clone())) as Box<dyn GpuFuture>;
     let rotation_start = Instant::now();
+    let mut click = false;
 
     loop {
         previous_frame.cleanup_finished();
@@ -153,7 +154,11 @@ fn main() {
 
         let uniform_buffer_subbuffer = {
             let elapsed = rotation_start.elapsed();
-            let rotation = elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1_000_000_000.0;
+            let rotation = if click {
+                0.
+            } else {
+                elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1_000_000_000.0
+            };
             let rotation = Matrix3::from_angle_y(Rad(rotation as f32));
 
             // note: this teapot was meant for OpenGL where the origin is at the lower left
@@ -225,7 +230,18 @@ fn main() {
         events_loop.poll_events(|ev| {
             match ev {
                 winit::Event::WindowEvent { event: winit::WindowEvent::CloseRequested, .. } => done = true,
-                winit::Event::WindowEvent { event: winit::WindowEvent::Resized(_), .. } => recreate_swapchain = true,
+                winit::Event::WindowEvent { event: winit::WindowEvent::Resized(_), .. } =>
+                    {
+                        recreate_swapchain = true; click = false
+                    },
+                winit::Event::WindowEvent { event: winit::WindowEvent::MouseInput{..}, .. } =>
+                    {
+                        click = if click {
+                            false
+                        } else {
+                            true
+                        };
+                    },
                 _ => ()
             }
         });
@@ -280,13 +296,13 @@ fn window_size_dependent_setup(
 mod vs {
     vulkano_shaders::shader!{
         ty: "vertex",
-        path: "src/bin/teapot/vert.glsl"
+        path: "src/bin/trackball-teapot/vert.glsl"
     }
 }
 
 mod fs {
     vulkano_shaders::shader!{
         ty: "fragment",
-        path: "src/bin/teapot/frag.glsl"
+        path: "src/bin/trackball-teapot/frag.glsl"
     }
 }
