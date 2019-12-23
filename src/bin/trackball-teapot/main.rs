@@ -30,7 +30,7 @@ use vulkano_win::VkSurfaceBuild;
 
 use winit::Window;
 
-use cgmath::{Matrix3, Matrix4, Point3, Vector3, Rad};
+use cgmath::{Matrix3, Matrix4, Point3, Vector3, Rad, Point2};
 
 use examples::{Vertex, Normal, VERTICES, NORMALS, INDICES};
 
@@ -39,6 +39,7 @@ use std::sync::Arc;
 use std::time::Instant;
 
 mod trackball;
+use trackball::Camera;
 
 fn main() {
     // The start of this example is exactly the same as `triangle`. You should read the
@@ -128,6 +129,9 @@ fn main() {
     let mut previous_frame = Box::new(sync::now(device.clone())) as Box<dyn GpuFuture>;
     let rotation_start = Instant::now();
     let mut click = false;
+    let mut camera = Camera{theta: 0., phi: 3.14, radius: 1., target: Point3{x: 0., y: 0.,z: 0.} };
+    let mut last_position = Point2{x: 0., y: 0.};
+    let mut first_move = false;
 
     loop {
         previous_frame.cleanup_finished();
@@ -157,7 +161,7 @@ fn main() {
         let uniform_buffer_subbuffer = {
             let elapsed = rotation_start.elapsed();
             let rotation = if click {
-                0.
+                elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1_000_000_000.0
             } else {
                 elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1_000_000_000.0
             };
@@ -167,7 +171,8 @@ fn main() {
             //       instead the origin is at the upper left in Vulkan, so we reverse the Y axis
             let aspect_ratio = dimensions[0] as f32 / dimensions[1] as f32;
             let proj = cgmath::perspective(Rad(std::f32::consts::FRAC_PI_2), aspect_ratio, 0.01, 100.0);
-            let view = Matrix4::look_at(Point3::new(0.3, 0.3, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, -1.0, 0.0));
+            let up = camera.get_up_vector();
+            let view = Matrix4::look_at(camera.to_cartesian_coords(), camera.target, up);
             let scale = Matrix4::from_scale(0.01);
 
             let uniform_data = vs::ty::Data {
@@ -241,6 +246,7 @@ fn main() {
                         if button == winit::MouseButton::Left
                         {
                             click = if state == winit::ElementState::Released {
+                                first_move = true;
                                 false
                             } else {
                                 true
@@ -250,7 +256,18 @@ fn main() {
                 winit::Event::WindowEvent { event: winit::WindowEvent::CursorMoved {device_id, position, modifiers}, .. } =>
                     {
                         if click{
-//                            println!(" (Position: {:?})", position.x);
+                            if first_move {
+                                last_position.x = position.x;
+                                last_position.y = position.y;
+                                first_move = false
+                            } else {
+                                let dphi = ((last_position.y - position.y) / 30000.) as f32;
+                                let dtheta = ((last_position.x - position.x) / 30000.) as f32;
+
+                                camera.rotate(-dtheta, dphi);
+
+                            }
+
                         }
 
                     },
