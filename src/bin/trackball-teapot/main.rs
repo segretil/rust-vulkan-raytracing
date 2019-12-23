@@ -38,6 +38,8 @@ use std::iter;
 use std::sync::Arc;
 use std::time::Instant;
 
+mod trackball;
+
 fn main() {
     // The start of this example is exactly the same as `triangle`. You should read the
     // `triangle` example if you haven't done so yet.
