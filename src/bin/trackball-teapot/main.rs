@@ -271,6 +271,17 @@ fn main() {
                         }
 
                     },
+                winit::Event::WindowEvent { event: winit::WindowEvent::MouseWheel {device_id, delta, phase, modifiers}, .. } =>
+                    {
+                        match delta {
+                            winit::MouseScrollDelta::LineDelta(x, y) => {
+                                camera.zoom(y / 10.);
+                            },
+                            winit::MouseScrollDelta::PixelDelta(x) => {
+                                camera.zoom(x.y as f32);
+                            }
+                        }
+                    }
                 _ => ()
             }
         });

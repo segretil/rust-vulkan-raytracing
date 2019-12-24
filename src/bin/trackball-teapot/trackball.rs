@@ -21,7 +21,7 @@ impl Camera {
         self.phi += dPhi;
     }
 
-    fn zoom(&mut self, distance : f32){
+    pub fn zoom(&mut self, distance : f32){
         self.radius -= distance;
     }
 
